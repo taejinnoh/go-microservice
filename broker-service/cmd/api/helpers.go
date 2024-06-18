@@ -15,16 +15,29 @@ type jsonResponse struct {
 
 // readJSON tries to read the body of a request and converts it into JSON
 func (app *Config) readJSON(w http.ResponseWriter, r *http.Request, data any) error {
-	maxByte := 1048576 // one megabyte
+	maxByte := 1048576 // 1MB
 
+	// Use http.MaxBytesReader to enforce a maximum read of 1MB from the
+	// response body. A request body larger than that will now result in
+	// Decode() returning a "http: request body too large" error.
 	r.Body = http.MaxBytesReader(w, r.Body, int64(maxByte))
 
+	// Setup the decoder and call the DisallowUnknownFields() method on it.
+	// This will cause Decode() to return a "json: unknown field ..." error
+	// if it encounters any extra unexpected fields in the JSON. Strictly
+	// speaking, it returns an error for "keys which do not match any
+	// non-ignored, exported fields in the destination".
 	dec := json.NewDecoder(r.Body)
+	dec.DisallowUnknownFields()
 	err := dec.Decode(data)
 	if err != nil {
 		return err
 	}
 
+	// Call decode again, using a pointer to an empty anonymous struct as
+	// the destination. If the request body only contained a single JSON
+	// object this will return an io.EOF error. So if we get anything else,
+	// we know that there is additional data in the request body.
 	err = dec.Decode(&struct{}{})
 	if err != io.EOF {
 		return errors.New("body must have only a single JSON value")
