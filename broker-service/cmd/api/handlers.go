@@ -43,12 +43,13 @@ func (app *Config) HandleSubmission(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// authenticate calls the authentication microservice and sends back the appropriate response
 func (app *Config) authenticate(w http.ResponseWriter, a AuthPayload) {
 	// create some json we'll send to the auth microservice
 	jsonData, _ := json.MarshalIndent(a, "", "\t")
 
 	// call the service
-	request, err := http.NewRequest("POST", "http://authentication-service/authenticate", bytes.NewBuffer(jsonData))
+	request, err := http.NewRequest("POST", "http://authentication-service:8080/authenticate", bytes.NewBuffer(jsonData))
 	if err != nil {
 		app.errorJSON(w, err)
 		return
@@ -64,14 +65,14 @@ func (app *Config) authenticate(w http.ResponseWriter, a AuthPayload) {
 
 	// make sure we get back the correct status code
 	if response.StatusCode == http.StatusUnauthorized {
-		app.errorJSON(w, errors.New("invalid crendentials"))
+		app.errorJSON(w, errors.New("invalid credentials"))
 		return
 	} else if response.StatusCode != http.StatusAccepted {
 		app.errorJSON(w, errors.New("error calling auth service"))
 		return
 	}
 
-	// create a variable we'll read reponse.Body into
+	// create a variable we'll read response.Body into
 	var jsonFromService jsonResponse
 
 	// decode the json from the auth service
