@@ -26,7 +26,17 @@ type Config struct {
 func main() {
 	log.Println("Starting authentication service")
 
-	app := &Config{}
+	// connect to DB
+	conn := connectToDB()
+	if conn == nil {
+		log.Panic("Can't connect to Postgres!")
+	}
+
+	// set up config
+	app := Config{
+		DB:     conn,
+		Models: data.New(conn),
+	}
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%s", webPort),
@@ -71,7 +81,7 @@ func connectToDB() *sql.DB {
 			return nil
 		}
 
-		log.Println("Backing off for two seconds...")
+		log.Println("Backing off for two seconds....")
 		time.Sleep(2 * time.Second)
 	}
 }
