@@ -13,7 +13,7 @@ import (
 const webPort = "8080"
 
 type Config struct {
-	Rabiit *amqp.Connection
+	Rabbit *amqp.Connection
 }
 
 func main() {
@@ -25,7 +25,7 @@ func main() {
 	defer rabbitConn.Close()
 
 	app := Config{
-		Rabiit: rabbitConn,
+		Rabbit: rabbitConn,
 	}
 
 	log.Printf("Starting broker service on port %s\n", webPort)
