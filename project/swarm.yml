@@ -2,13 +2,25 @@ version: '3'
 
 services:
 
+  caddy:
+    image: shxowlstjnoh/micro-caddy:1.0.0
+    deploy:
+      mode: replicated
+      replicas: 1
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+
   front-end:
     image: shxowlstjnoh/front-end:1.0.0
     deploy:
       mode: replicated
       replicas: 1
-      
-  brocker-service:
+
+  broker-service:
     image: shxowlstjnoh/broker-service:1.0.1
     deploy:
       mode: replicated
@@ -96,3 +108,8 @@ services:
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
       - ${HOME}/db-data/postgres:/var/lib/postgresql/data 
+  
+volumes:
+  caddy_data:
+    external: true
+  caddy_config:
