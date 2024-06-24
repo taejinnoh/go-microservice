@@ -20,7 +20,7 @@ func main() {
 	}
 }
 
-// go:embed templates
+//go:embed templates
 var templateFS embed.FS
 
 func render(w http.ResponseWriter, t string) {
